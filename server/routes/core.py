@@ -2,7 +2,7 @@
 
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from .util import require_json_params, require_query_params
+from .util import require_json_params
 
 core_blueprint = Blueprint("core", __name__, url_prefix="/")
 CORS(core_blueprint)
@@ -14,7 +14,7 @@ def healthcheck():
         "status": "OK"
         })
 
-@core_blueprint.put("/")
+@core_blueprint.put("weights")
 @require_json_params(["value", "tickers"])
 def portfolio():
     """ Returns the desired weight of each stock.
@@ -23,4 +23,12 @@ def portfolio():
     :param tickers: The tickers to create the portfolio over
     :type tickers: str[]
     """
-    return jsonify({})
+    body = request.get_json()
+    value = body["value"]
+    tickers = body["tickers"]
+
+    return jsonify({
+        "status": "OK",
+        "value": value,
+        "tickers": tickers
+        })
