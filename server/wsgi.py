@@ -2,11 +2,13 @@
 
 from flask import Flask
 from flask_cors import CORS
+from routes.core import core_blueprint
 from config import PORT
 
 def init_app():
     """ Creates a flask server instance. """
     app = Flask(__name__)
+    app.register_blueprint(core_blueprint)
     CORS(app)
     return app
 
