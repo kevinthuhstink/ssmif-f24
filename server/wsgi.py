@@ -2,7 +2,7 @@
 
 from flask import Flask
 from flask_cors import CORS
-from routes.core import core_blueprint
+from routes import core_blueprint
 from config import PORT
 
 def init_app():

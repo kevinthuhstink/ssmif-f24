@@ -2,7 +2,7 @@
 
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from .util import require_json_params
+from util import require_json_params
 
 core_blueprint = Blueprint("core", __name__, url_prefix="/")
 CORS(core_blueprint)
