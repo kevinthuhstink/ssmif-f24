@@ -1,24 +1,43 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useReducer, useEffect } from "react"
+import serverRequest from "./baseRequest"
+import PortfolioForm from "./PortfolioForm"
+
+type Action = { type: "SET", payload: string }
 
 export default function Page() {
-  const [text, setText] = useState<string>(null!)
+  const [error, setError] = useState<Error>(null!)
+
+  function displayReducer(state: string, action: Action) {
+    switch (action.type) {
+      case "SET":
+        return action.payload
+      default:
+        return state
+    }
+  }
+
+  const [display, displayDispatch] = useReducer<typeof displayReducer>(displayReducer, null!)
 
   useEffect(() => {
-    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL
-    fetch(`${serverUrl}/healthcheck`).then(async res => {
-      setText(await res.text())
+    serverRequest.get("/healthcheck").then(async res => {
+      if (res.status !== 200)
+        throw new Error("healthcheck failed. is the server running?")
+      displayDispatch({ type: "SET", payload: JSON.stringify(res.data) })
     }).catch(err => {
       console.error(err)
-      setText(err.message)
+      setError(err)
     })
   }, [])
 
-  if (!text)
-    return <>Loading...</>
+  if (error)
+    return <>{error.message}</>
 
   return (
-    <div>{text}</div>
+    <main>
+      <h1>{display}</h1>
+      <PortfolioForm displayDispatch={displayDispatch} />
+    </main>
   );
 }
