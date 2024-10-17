@@ -3,7 +3,7 @@
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 from util import require_json_params
-from services.model import Model
+from services.model import Model, TickerException
 
 core_blueprint = Blueprint("core", __name__, url_prefix="/")
 CORS(core_blueprint)
@@ -27,7 +27,14 @@ def portfolio():
     body = request.get_json()
     value = body["value"]
     tickers = body["tickers"]
-    model = Model(value, tickers)
+
+    try:
+        model = Model(value, tickers)
+    except TickerException as e:
+        return jsonify({
+            "status": "failure",
+            "error": e.message
+            }), 400
 
     return jsonify({
         "status": "OK",

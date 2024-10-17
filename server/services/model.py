@@ -6,6 +6,14 @@ from pypfopt.risk_models import risk_matrix, fix_nonpositive_semidefinite
 from pypfopt.expected_returns import capm_return
 from pypfopt.efficient_frontier import EfficientFrontier
 
+class TickerException(Exception):
+    """ Makes e.ticker exist so you know which ticker you fucked up on """
+    def __init__(self, message, ticker):
+        super().__init__(message)
+        self.message = message
+        self.ticker = ticker
+
+
 class ReturnsModel:
     """ Dummy returns EMA model """
     def __init__(self, prices):
@@ -20,6 +28,11 @@ class Model(EfficientFrontier):
     def __init__(self, value, tickers):
         self.value = value
         self.tickers = {t: yf.Ticker(t).history(period="1y") for t in tickers}
+
+        for ticker in self.tickers:
+            if self.tickers[ticker].empty:
+                raise TickerException(f"Ticker ${ticker.upper()} has no price data.", ticker)
+
         closes = pd.DataFrame.from_dict({k: v.get("Close") for k, v in self.tickers.items()})
         self.returns = ReturnsModel(closes).returns
         self.risk = fix_nonpositive_semidefinite(risk_matrix(closes))
