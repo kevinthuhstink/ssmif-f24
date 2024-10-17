@@ -1,9 +1,8 @@
-import { Dispatch } from "react"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { serverRequest } from "./baseRequest"
-import { PortfolioAction } from "./portfolioContext"
+import { usePortfolio } from "./portfolioContext"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,14 +25,15 @@ const formSchema = z.object({
 
 type FormInput = z.infer<typeof formSchema>
 
-export default function PortfolioForm({ displayDispatch }: { displayDispatch: Dispatch<PortfolioAction> }) {
+export default function PortfolioForm() {
+  const { portfolioDispatch } = usePortfolio()
   const form = useForm<FormInput>({
     resolver: zodResolver(formSchema)
   })
 
   async function onSubmit(values: FormInput) {
     const res = await serverRequest.put("/weights", values)
-    displayDispatch({ type: "SET", payload: res.data })
+    portfolioDispatch({ type: "SET", payload: res.data })
   }
 
   return (
