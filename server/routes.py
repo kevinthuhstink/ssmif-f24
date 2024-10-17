@@ -3,6 +3,7 @@
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 from util import require_json_params
+from services.model import Model
 
 core_blueprint = Blueprint("core", __name__, url_prefix="/")
 CORS(core_blueprint)
@@ -26,9 +27,9 @@ def portfolio():
     body = request.get_json()
     value = body["value"]
     tickers = body["tickers"]
+    model = Model(value, tickers)
 
     return jsonify({
         "status": "OK",
-        "value": value,
-        "tickers": tickers
+        "weights": model()
         })

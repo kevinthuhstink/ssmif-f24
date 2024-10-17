@@ -2,7 +2,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { serverRequest } from "./baseRequest"
-import { usePortfolio } from "./portfolioContext"
+import { portfolioSchema, usePortfolio } from "./portfolioContext"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,8 +31,13 @@ export default function PortfolioForm() {
     resolver: zodResolver(formSchema)
   })
 
-  async function onSubmit(values: FormInput) {
-    const res = await serverRequest.put("/weights", values)
+  async function onSubmit(input: FormInput) {
+    const tickerArray = input.tickers.split(", ")
+    const res = await serverRequest.put("/weights", {
+      value: input.value,
+      tickers: tickerArray,
+    })
+    portfolioSchema.parse(res.data)
     portfolioDispatch({ type: "SET", payload: res.data })
   }
 

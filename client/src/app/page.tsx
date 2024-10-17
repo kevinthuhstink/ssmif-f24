@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { serverRequest } from "./baseRequest"
+import { PortfolioProvider } from "./portfolioContext"
 import PortfolioForm from "./PortfolioForm"
 import PortfolioTable from "./PortfolioTable"
 
@@ -23,8 +24,10 @@ export default function Page() {
 
   return (
     <main>
-      <PortfolioForm />
-      <PortfolioTable />
+      <PortfolioProvider>
+        <PortfolioForm />
+        <PortfolioTable />
+      </PortfolioProvider>
     </main>
   );
 }

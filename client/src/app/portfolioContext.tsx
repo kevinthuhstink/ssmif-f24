@@ -14,7 +14,7 @@ export const PortfolioContext = createContext<{
 }>(null!)
 export const usePortfolio = () => useContext(PortfolioContext)
 
-export function PortfolioContextProvider({ children }: React.PropsWithChildren) {
+export function PortfolioProvider({ children }: React.PropsWithChildren) {
   function portfolioReducer(state: Portfolio, action: PortfolioAction) {
     switch (action.type) {
       case "SET":
