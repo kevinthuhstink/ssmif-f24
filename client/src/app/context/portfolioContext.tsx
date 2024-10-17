@@ -8,6 +8,9 @@ export const portfolioErrorSchema = z.object({
 export const portfolioSchema = z.object({
   status: z.string(),
   error: portfolioErrorSchema.shape.error.optional(),
+  return: z.number(),
+  volatility: z.number(),
+  sharpe: z.number(),
   weights: z.record(z.string(), z.number())
 })
 
@@ -22,6 +25,11 @@ export const PortfolioContext = createContext<{
   portfolioDispatch: Dispatch<PortfolioAction>
 }>(null!)
 export const usePortfolio = () => useContext(PortfolioContext)
+
+export const unknownErrorAction: PortfolioAction = {
+  type: "ERROR",
+  payload: { error: "Unknown error occurred. Is the server running?" }
+}
 
 export function PortfolioProvider({ children }: React.PropsWithChildren) {
   function portfolioReducer(state: Portfolio, action: PortfolioAction) {

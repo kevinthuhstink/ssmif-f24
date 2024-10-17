@@ -7,7 +7,7 @@ import {
   portfolioSchema,
   portfolioErrorSchema,
   usePortfolio,
-  PortfolioError,
+  unknownErrorAction,
 } from "./context/portfolioContext"
 
 import { Button } from "@/components/ui/button"
@@ -43,17 +43,28 @@ export default function PortfolioForm() {
       value: input.value,
       tickers: tickerArray,
     }).catch((err: AxiosError) => {
-      if (err.response) {
-        portfolioErrorSchema.parse(err.response.data)
-        portfolioDispatch({ type: "ERROR", payload: err.response.data as PortfolioError })
-      } else console.log("idfk man")
+      console.error(err)
+      try {
+        const errorData = portfolioErrorSchema.parse(err.response?.data)
+        portfolioDispatch({ type: "ERROR", payload: errorData })
+      } catch {
+        portfolioDispatch(unknownErrorAction)
+      }
     })
 
     if (!res)
       return
 
-    portfolioSchema.parse(res.data)
-    portfolioDispatch({ type: "SET", payload: res.data })
+    try {
+      const data = portfolioSchema.parse(res.data)
+      portfolioDispatch({ type: "SET", payload: data })
+    } catch (err) {
+      console.error(err)
+      portfolioDispatch({
+        type: "ERROR",
+        payload: { error: "Portfolio optimization response type is invalid. Did the model fail?" }
+      })
+    }
   }
 
   return (
