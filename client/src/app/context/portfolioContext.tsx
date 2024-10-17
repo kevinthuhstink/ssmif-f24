@@ -1,12 +1,21 @@
 import { createContext, useContext, useReducer, Dispatch } from "react"
 import { z } from "zod"
 
+export const portfolioErrorSchema = z.object({
+  error: z.string()
+})
+
 export const portfolioSchema = z.object({
   status: z.string(),
+  error: portfolioErrorSchema.shape.error.optional(),
   weights: z.record(z.string(), z.number())
-}).strict()
+})
+
 export type Portfolio = z.infer<typeof portfolioSchema>
-export type PortfolioAction = { type: "SET", payload: Portfolio }
+export type PortfolioError = z.infer<typeof portfolioErrorSchema>
+export type PortfolioAction =
+  { type: "SET", payload: Portfolio } |
+  { type: "ERROR", payload: PortfolioError }
 
 export const PortfolioContext = createContext<{
   portfolio: Portfolio | null,
@@ -19,6 +28,12 @@ export function PortfolioProvider({ children }: React.PropsWithChildren) {
     switch (action.type) {
       case "SET":
         return action.payload
+      case "ERROR":
+        return {
+          ...state,
+          status: "ERROR",
+          error: action.payload.error
+        }
       default:
         return state
     }

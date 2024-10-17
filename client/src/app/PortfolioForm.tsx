@@ -1,8 +1,14 @@
+import { AxiosError } from "axios"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { serverRequest } from "./baseRequest"
-import { portfolioSchema, usePortfolio } from "./portfolioContext"
+import {
+  portfolioSchema,
+  portfolioErrorSchema,
+  usePortfolio,
+  PortfolioError,
+} from "./context/portfolioContext"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -36,7 +42,16 @@ export default function PortfolioForm() {
     const res = await serverRequest.put("/weights", {
       value: input.value,
       tickers: tickerArray,
+    }).catch((err: AxiosError) => {
+      if (err.response) {
+        portfolioErrorSchema.parse(err.response.data)
+        portfolioDispatch({ type: "ERROR", payload: err.response.data as PortfolioError })
+      } else console.log("idfk man")
     })
+
+    if (!res)
+      return
+
     portfolioSchema.parse(res.data)
     portfolioDispatch({ type: "SET", payload: res.data })
   }
