@@ -39,7 +39,7 @@ export default function PortfolioForm() {
 
   async function onSubmit(input: FormInput) {
     const tickerArray = input.tickers.split(", ")
-    const res = await serverRequest.put("/weights", {
+    const res = await serverRequest.put("/model", {
       value: input.value,
       tickers: tickerArray,
     }).catch((err: AxiosError) => {
