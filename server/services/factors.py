@@ -37,10 +37,17 @@ class FactorModel():
         if len(recent_entries) > 0:
             start_date = min(recent_entries)
         new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
-        while new_data.isnull().values.any(): # TODO this is so jank
-            new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
         sql.insert_price_data(new_data)
         return pd.concat(map(sql.get_price_data, symbols), axis=1)
+
+    @staticmethod
+    def mkt_premium():
+        """ Gives the market risk premium for every day
+        over the last 12 months.
+        Calculated by total market (S&P 500) 12-month returns
+        minus the risk-free rate (13-wk treasury bills)
+        """
+        return
 
     def smb(self):
         """ Gives the "small minus big" advantage for every day
@@ -117,8 +124,8 @@ def _12mo_return_rate(prices):
     :rtype: pandas.Series, indexed by pandas.Timestamp
     """
     num_days = TRADEDAYS_IN_YEAR
-    this_year = prices.loc[:prices.index[num_days]]
-    last_year = prices.loc[prices.index[-1 * num_days - 1]:]
+    last_year = prices.loc[:prices.index[num_days]]
+    this_year = prices.loc[prices.index[-1 * num_days - 1]:]
 
     date_indices = this_year.index
     last_year.index = list(range(num_days + 1))

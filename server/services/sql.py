@@ -75,16 +75,15 @@ def get_price_data(ticker, start=pd.Timestamp.today().round(freq="d"), days=750)
         if not check_table(ticker):
             return pd.Series()
 
+        day_to_get = start - pd.Timedelta(days, "d")
         data = pd.Series()
-        while days > 0:
-            time = start.timestamp()
-            cur.execute(f"SELECT * FROM {ticker} WHERE t={time}")
-            res = cur.fetchone()
+        while day_to_get <= start:
+            time = day_to_get.timestamp()
+            res = cur.execute(f"SELECT * FROM {ticker} WHERE t={time}").fetchone()
             if res:
                 t, price = res
                 t = pd.Timestamp.utcfromtimestamp(t).tz_convert(None)
                 data[t] = price
-            start = start - pd.Timedelta(1, "day")
-            days -= 1
+            day_to_get = day_to_get + pd.Timedelta(1, "day")
         data.name = ticker
         return data
