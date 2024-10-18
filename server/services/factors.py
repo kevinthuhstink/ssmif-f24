@@ -25,7 +25,7 @@ class FactorModel():
 
         # Price history aggregated for the entire "category"
         self.prices_agg = {k: v.sum(axis=1) for k, v in prices.items()}
-        self.rates_agg = {k: _12mo_return_rate(v) for k, v in self.prices_agg.items()}
+        self.rates_agg = {k: m12_return_rate(v) for k, v in self.prices_agg.items()}
 
     @staticmethod
     def get_prices(symbols):
@@ -46,8 +46,12 @@ class FactorModel():
         over the last 12 months.
         Calculated by total market (S&P 500) 12-month returns
         minus the risk-free rate (13-wk treasury bills)
+
+        :rtype: pandas.Series, indexed by pandas.Timestamp
         """
-        return
+        mkt_prem = market_rates() - risk_free_rates()
+        mkt_prem.name = "Mkt. Premium"
+        return mkt_prem
 
     def smb(self):
         """ Gives the "small minus big" advantage for every day
@@ -71,8 +75,8 @@ class FactorModel():
         """
         value_prices = self.prices_agg["big_value"] + self.prices_agg["small_value"]
         growth_prices = self.prices_agg["big_growth"] + self.prices_agg["small_growth"]
-        value_rates = _12mo_return_rate(value_prices)
-        growth_rates = _12mo_return_rate(growth_prices)
+        value_rates = m12_return_rate(value_prices)
+        growth_rates = m12_return_rate(growth_prices)
         hml_advantage = value_rates - growth_rates
         hml_advantage.name = "HML"
         return hml_advantage
@@ -107,12 +111,12 @@ def market_rates():
     :rtype: pandas.Series, indexed by pandas.Timestamp
     """
     snp = yf.Ticker("^GSPC").history(period="2y")["Close"].tz_localize(None)
-    market_returns = _12mo_return_rate(snp)
+    market_returns = m12_return_rate(snp)
     market_returns.name = "Market Returns"
     return market_returns
 
 
-def _12mo_return_rate(prices):
+def m12_return_rate(prices):
     """ Takes a 2yr series of returns, and gives the 12-month
     change (return rate) for every day in the last year.
 
