@@ -4,10 +4,20 @@ import sqlite3
 from contextlib import closing
 import pandas as pd
 
-con = sqlite3.Connection("prices.db")
+def get_connection():
+    """ Returns a new db connection. """
+    return sqlite3.connect("prices.db")
 
-def check_table(ticker):
-    """ Checks if the ticker has an existing db table. """
+def check_table(con, ticker):
+    """ Checks if the ticker has an existing db table.
+
+    :param con: Active database connection.
+    :type con: sqlite3.Connection
+    :param ticker: Ticker name, all uppercase
+    :type ticker: str
+
+    :rtype: bool
+    """
     cur = con.cursor()
     cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{ticker}'")
     res = cur.fetchone()
@@ -15,9 +25,11 @@ def check_table(ticker):
     return bool(res)
 
 
-def find_recent_entry(ticker, limit=750):
+def find_recent_entry(con, ticker, limit=750):
     """ Finds the most recent existing data entry for a ticker.
 
+    :param con: Active database connection.
+    :type con: sqlite3.Connection
     :param ticker: Ticker name, all uppercase
     :type ticker: str
     :param limit: Max number of days to check for until the program times out
@@ -30,7 +42,6 @@ def find_recent_entry(ticker, limit=750):
     """
     with closing(con.cursor()) as cur:
         if not check_table(ticker):
-            print("table check failed")
             return None
 
         today = pd.Timestamp.today().round(freq="d")
@@ -44,9 +55,11 @@ def find_recent_entry(ticker, limit=750):
         return None
 
 
-def insert_price_data(df):
+def insert_price_data(con, df):
     """ Inserts a dataframe of price data into the database.
 
+    :param con: Active database connection.
+    :type con: sqlite3.Connection
     :param df: DataFrame with ticker columns and price entries.
     :type df: pandas.DataFrame, indexed by pandas.Timestamp
     """
@@ -60,9 +73,11 @@ def insert_price_data(df):
             con.commit()
 
 
-def get_price_data(ticker, start=pd.Timestamp.today().round(freq="d"), days=750):
+def get_price_data(con, ticker, start=pd.Timestamp.today().round(freq="d"), days=750):
     """ Gets all price entries within a day range.
 
+    :param con: Active database connection.
+    :type con: sqlite3.Connection
     :param ticker: Ticker name, all uppercase, table to query
     :type ticker: str
     :param start: The first day to get db data for
@@ -74,7 +89,7 @@ def get_price_data(ticker, start=pd.Timestamp.today().round(freq="d"), days=750)
     :rtype: pandas.Series, indexed by pandas.Timestamp
     """
     with closing(con.cursor()) as cur:
-        if not check_table(ticker):
+        if not check_table(con, ticker):
             return pd.Series()
 
         day_to_get = start - pd.Timedelta(days, "d")
