@@ -3,7 +3,7 @@
 import datetime
 import pandas as pd
 import yfinance as yf
-from . import sql
+from .price_fetching import fetch_prices
 
 TRADEDAYS_IN_YEAR = 252
 
@@ -21,24 +21,11 @@ class FactorModel():
                     "winners": ["NVDA", "COHR", "APP", "MSTR"],
                     "losers": ["NFE", "NYCB", "MBLY"]
                     }
-        prices = {k: FactorModel.get_prices(v).dropna(axis=1) for k, v in self.tickers.items()}
+        prices = {k: fetch_prices(v).dropna(axis=1) for k, v in self.tickers.items()}
 
         # Price history aggregated for the entire "category"
         self.prices_agg = {k: v.sum(axis=1) for k, v in prices.items()}
         self.rates_agg = {k: m12_return_rate(v) for k, v in self.prices_agg.items()}
-
-    @staticmethod
-    def get_prices(symbols):
-        """ Gets the last 2 years of price data for a symbol.
-        :rtype: pandas.DataFrame, indexed by pandas.Timestamp
-        """
-        recent_entries = list(filter(lambda x: x is not None, map(sql.find_recent_entry, symbols)))
-        start_date = datetime.date.today() - datetime.timedelta(days=730)
-        if len(recent_entries) > 0:
-            start_date = min(recent_entries)
-        new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
-        sql.insert_price_data(new_data)
-        return pd.concat(map(sql.get_price_data, symbols), axis=1)
 
     @staticmethod
     def mkt_premium():
