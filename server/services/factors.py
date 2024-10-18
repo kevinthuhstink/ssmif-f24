@@ -1,7 +1,5 @@
 """ Retrieves the factors used in the Carhart 4-factor model """
 
-import datetime
-import pandas as pd
 import yfinance as yf
 from .price_fetching import fetch_prices
 

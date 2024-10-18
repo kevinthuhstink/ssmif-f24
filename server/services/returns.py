@@ -2,27 +2,26 @@
 
 import cvxpy as cp
 import pandas as pd
-from .factors import FactorModel, risk_free_rates, m12_return_rate
+from .factors import FactorModel, risk_free_rates
 
 
-class ReturnsModel:
+class Carhart4FactorModel:
     """ Custom Carhart 4-factor model """
     def __init__(self):
         self.reconstruct_factors()
 
-    def model(self, prices):
+    def __call__(self, rates):
         """ Applies the Carhart model onto the given asset.
 
-        :param prices: 2y historical price data for the asset to model.
-        :type prices: pandas.Series, indexed by pandas.Timestamp
+        :param rates: Annualized return rates for the asset.
+        :type rates: pandas.Series, indexed by pandas.Timestamp
 
         :return: Expected future rate of return for the asset
         :rtype: float
         """
-        prices = m12_return_rate(prices)
-        days_with_data = prices.index.intersection(self.factors.index)
+        days_with_data = rates.index.intersection(self.factors.index)
         factors = self.factors.loc[days_with_data].to_numpy()
-        asset_returns = prices.loc[days_with_data].to_numpy()
+        asset_returns = rates.loc[days_with_data].to_numpy()
         risk_free = self.risk_free_rates.loc[days_with_data].to_numpy()
 
         betas = cp.Variable(4) # [ bCAPM, bSMB, bHML, bUMD ]

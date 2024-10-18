@@ -1,51 +1,42 @@
 """ The portfolio optimization model. """
 
 import pandas as pd
-import yfinance as yf
 from pypfopt.risk_models import risk_matrix, fix_nonpositive_semidefinite
-from pypfopt.expected_returns import capm_return
 from pypfopt.efficient_frontier import EfficientFrontier
+from .factors import m12_return_rate
+from .price_fetching import fetch_prices
 
 class TickerException(Exception):
-    """ Makes e.ticker exist so you know which ticker you fucked up on """
+    """ Has class variable self.ticker so you know which ticker doesn't work """
     def __init__(self, message, ticker):
         super().__init__(message)
         self.message = message
         self.ticker = ticker
 
 
-class ReturnsModel:
-    """ Dummy returns EMA model """
-    def __init__(self, prices):
-        self.returns = capm_return(prices)
-
-    def __str__(self):
-        return str(self.returns)
-
-
 class Model(EfficientFrontier):
-    """ Dummy super basic model """
-    def __init__(self, value, tickers):
-        self.value = value
-        self.tickers = {t: yf.Ticker(t).history(period="1y") for t in tickers}
+    """ Carhart 4-factor model + Efficient Frontier
 
-        for ticker in self.tickers:
-            if self.tickers[ticker].empty:
+    :param model: Calculates annualized return rates for assets
+    :typeof model: services.returns.Carhart4FactorModel
+    :param tickers: Tickers to optimize a portfolio over
+    :type tickers: str[]
+    """
+    def __init__(self, model, tickers):
+        prices = fetch_prices(tickers)
+
+        for ticker in prices:
+            if prices[ticker].empty:
                 raise TickerException(f"Ticker ${ticker.upper()} has no price data.", ticker)
 
-        closes = pd.DataFrame.from_dict({k: v.get("Close") for k, v in self.tickers.items()})
-        self.returns = ReturnsModel(closes).returns
-        self.risk = fix_nonpositive_semidefinite(risk_matrix(closes))
-        super().__init__(self.returns, self.risk)
+        rates = {t: m12_return_rate(prices[t]) for t in prices}
+        self.returns = pd.Series({t: model(r) for t, r in rates.items()})
+        self.returns.name = "Expected Returns"
+        self.risk_free_rate = model.risk_free_rates.iloc[-1]
+        self.risk_matrix = fix_nonpositive_semidefinite(risk_matrix(prices))
+        super().__init__(self.returns, self.risk_matrix)
 
     def __str__(self):
-        return f"""Covariance:\n{self.risk}\n\n
-            Returns:\n{self.returns}\n\n
-            Weights\n:{self.max_sharpe()}"""
-
-    def __call__(self, **kwargs):
-        if "risk" in kwargs:
-            return self.efficient_risk(kwargs["risk"])
-        if "return" in kwargs:
-            return self.efficient_return(kwargs["return"])
-        return self.max_sharpe()
+        returns = f"Returns:\n{self.returns}"
+        risk = f"Var-Covar Matrix:\n{self.risk_matrix}"
+        return f"{returns}\n\n{risk}"
