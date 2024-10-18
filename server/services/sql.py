@@ -15,7 +15,7 @@ def check_table(ticker):
     return bool(res)
 
 
-def find_recent_entry(ticker, limit=365):
+def find_recent_entry(ticker, limit=750):
     """ Finds the most recent existing data entry for a ticker.
 
     :param ticker: Ticker name, all uppercase
@@ -32,9 +32,10 @@ def find_recent_entry(ticker, limit=365):
         if not check_table(ticker):
             return None
 
-        today = int(pd.Timestamp.today().round(freq="d").timestamp())
+        today = pd.Timestamp.today().round(freq="d")
         while limit > 0:
-            cur.execute(f"SELECT price FROM {ticker} WHERE t={today}")
+            timestamp = int(today.timestamp())
+            cur.execute(f"SELECT price FROM {ticker} WHERE t={timestamp}")
             if cur.fetchone():
                 return today
             today = today - pd.Timedelta(1, "day")
@@ -50,14 +51,14 @@ def insert_price_data(df):
     """
     with closing(con.cursor()) as cur:
         for ticker in df:
-            cur.execute(f"CREATE TABLE IF NOT EXISTS {ticker} (t INTEGER PRIMARY KEY, price)")
+            cur.execute(f"CREATE TABLE IF NOT EXISTS {ticker} (t INTEGER PRIMARY KEY, price REAL)")
             prices = df[ticker]
             for t, price in prices.items():
                 timestamp = int(t.timestamp())
                 cur.execute(f"INSERT OR REPLACE INTO {ticker} VALUES (?, ?)", (timestamp, price))
 
 
-def get_price_data(ticker, start=pd.Timestamp.today().round(freq="d"), days=720):
+def get_price_data(ticker, start=pd.Timestamp.today().round(freq="d"), days=750):
     """ Gets all price entries within a day range.
 
     :param ticker: Ticker name, all uppercase, table to query
