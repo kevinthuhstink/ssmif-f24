@@ -30,6 +30,7 @@ def find_recent_entry(ticker, limit=750):
     """
     with closing(con.cursor()) as cur:
         if not check_table(ticker):
+            print("table check failed")
             return None
 
         today = pd.Timestamp.today().round(freq="d")
@@ -56,6 +57,7 @@ def insert_price_data(df):
             for t, price in prices.items():
                 timestamp = int(t.timestamp())
                 cur.execute(f"INSERT OR REPLACE INTO {ticker} VALUES (?, ?)", (timestamp, price))
+            con.commit()
 
 
 def get_price_data(ticker, start=pd.Timestamp.today().round(freq="d"), days=750):
