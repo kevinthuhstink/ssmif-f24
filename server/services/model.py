@@ -2,10 +2,12 @@
 
 from math import sqrt
 from functools import reduce
+from contextlib import closing
 import numpy as np
 import pandas as pd
 from pypfopt.risk_models import risk_matrix, fix_nonpositive_semidefinite
 from pypfopt.efficient_frontier import EfficientFrontier
+from .sql import get_connection
 from .factors import m12_return_rate
 from .price_fetching import fetch_prices
 
@@ -26,7 +28,8 @@ class Model(EfficientFrontier):
     :type tickers: str[]
     """
     def __init__(self, model, tickers):
-        prices = fetch_prices(tickers)
+        with closing(get_connection()) as con:
+            prices = fetch_prices(con, tickers)
 
         for ticker in prices:
             if prices[ticker].empty:

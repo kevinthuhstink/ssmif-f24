@@ -1,6 +1,8 @@
 """ Retrieves the factors used in the Carhart 4-factor model """
 
+from contextlib import closing
 import yfinance as yf
+from .sql import get_connection
 from .price_fetching import fetch_prices
 
 TRADEDAYS_IN_YEAR = 252
@@ -8,18 +10,19 @@ TRADEDAYS_IN_YEAR = 252
 class FactorModel():
     """ Produces the factors used in the Carhart 4-factor model """
     def __init__(self, tickers=None):
-        if tickers:
-            self.tickers = tickers
-        else:
-            self.tickers = {
-                    "small_value": ["EVRI", "AVD", "HDSN"],
-                    "small_growth": ["ACMR", "LRN", "DGII"],
-                    "big_value": ["NKE", "PFE", "UPS", "USB"],
-                    "big_growth": ["AMZN", "CRM"],
-                    "winners": ["NVDA", "COHR", "APP", "MSTR"],
-                    "losers": ["NFE", "NYCB", "MBLY"]
-                    }
-        prices = {k: fetch_prices(v).dropna(axis=1) for k, v in self.tickers.items()}
+        with closing(get_connection()) as con:
+            if tickers:
+                self.tickers = tickers
+            else:
+                self.tickers = {
+                        "small_value": ["EVRI", "AVD", "HDSN"],
+                        "small_growth": ["ACMR", "LRN", "DGII"],
+                        "big_value": ["NKE", "PFE", "UPS", "USB"],
+                        "big_growth": ["AMZN", "CRM"],
+                        "winners": ["NVDA", "COHR", "APP", "MSTR"],
+                        "losers": ["NFE", "NYCB", "MBLY"]
+                        }
+            prices = {k: fetch_prices(con, v).dropna(axis=1) for k, v in self.tickers.items()}
 
         # Price history aggregated for the entire "category"
         self.prices_agg = {k: v.sum(axis=1) for k, v in prices.items()}

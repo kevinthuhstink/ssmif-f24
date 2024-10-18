@@ -41,7 +41,7 @@ def find_recent_entry(con, ticker, limit=750):
     :rtype: pandas.Timestamp | None
     """
     with closing(con.cursor()) as cur:
-        if not check_table(ticker):
+        if not check_table(con, ticker):
             return None
 
         today = pd.Timestamp.today().round(freq="d")
