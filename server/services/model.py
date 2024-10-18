@@ -1,5 +1,8 @@
 """ The portfolio optimization model. """
 
+from math import sqrt
+from functools import reduce
+import numpy as np
 import pandas as pd
 from pypfopt.risk_models import risk_matrix, fix_nonpositive_semidefinite
 from pypfopt.efficient_frontier import EfficientFrontier
@@ -40,3 +43,39 @@ class Model(EfficientFrontier):
         returns = f"Returns:\n{self.returns}"
         risk = f"Var-Covar Matrix:\n{self.risk_matrix}"
         return f"{returns}\n\n{risk}"
+
+    def portfolio_returns(self, weights):
+        """ Predicts total portfolio return given portfolio weights
+
+        :param weights: The weight of each asset in the portfolio
+        :type weights: OrderedDict[str, float]
+
+        :return: Annualized portfolio returns
+        :rtype: float
+        """
+        return reduce(lambda acc, t: acc + weights[t] * self.returns[t], weights.keys(), 0)
+
+    def portfolio_risk(self, weights):
+        """ Determines total portfolio volatility given portfolio weights
+
+        :param weights: The weight of each asset in the portfolio
+        :type weights: OrderedDict[str, float]
+
+        :return: Annualized portfolio risk
+                 (one stddev of total value variation as fraction of total weight)
+        :rtype: float
+        """
+        w = np.array(list(weights.values()))
+        return sqrt((w[None, :] @ self.risk_matrix.to_numpy() @ w)[0])
+
+    def sharpe_ratio(self, weights):
+        """ Determines portfolio sharpe ratio given portfolio weights
+
+        :param weights: The weight of each asset in the portfolio
+        :type weights: OrderedDict[str, float]
+
+        :return: sharpe ratio number
+        :rtype: float
+        """
+        excess_returns = self.portfolio_returns(weights) - self.risk_free_rate
+        return excess_returns / self.portfolio_risk(weights)

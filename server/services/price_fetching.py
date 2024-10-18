@@ -22,7 +22,6 @@ def fetch_prices(symbols):
         start_date = datetime.date.today() - datetime.timedelta(days=730)
     else:
         start_date = min(recent_entries)
-    print(start_date)
     new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
     if len(symbols) == 1:
         new_data = pd.DataFrame(new_data)
