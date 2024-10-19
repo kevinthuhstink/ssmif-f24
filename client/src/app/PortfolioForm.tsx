@@ -39,6 +39,7 @@ export default function PortfolioForm() {
 
   async function onSubmit(input: FormInput) {
     const tickerArray = input.tickers.split(", ")
+    console.log(tickerArray)
     const res = await serverRequest.put("/model", {
       value: input.value,
       tickers: tickerArray,
@@ -69,7 +70,7 @@ export default function PortfolioForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mb-24">
         <FormField
           control={form.control}
           name="value"

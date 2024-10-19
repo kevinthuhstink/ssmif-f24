@@ -5,6 +5,7 @@ import { serverRequest } from "./baseRequest"
 import { PortfolioProvider } from "./context/portfolioContext"
 import PortfolioForm from "./PortfolioForm"
 import PortfolioTable from "./PortfolioTable"
+import Authenticator from "./Authenticator"
 
 export default function Page() {
   const [error, setError] = useState<string | null>(null)
@@ -22,6 +23,7 @@ export default function Page() {
   return (
     <main>
       {error && <h1 className="text-red-500">{error}</h1>}
+      <Authenticator />
       <PortfolioProvider>
         <PortfolioForm />
         <PortfolioTable />
