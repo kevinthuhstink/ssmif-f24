@@ -4,6 +4,7 @@ import datetime
 import yfinance as yf
 import pandas as pd
 from . import sql
+from .errors import TickerException
 
 def fetch_prices(con, symbols):
     """ Gets the last 2 years of price data for a symbol.
@@ -24,9 +25,22 @@ def fetch_prices(con, symbols):
         start_date = datetime.date.today() - datetime.timedelta(days=730)
     else:
         start_date = min(recent_entries)
-    new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
+
+    try:
+        print(f"Downloading price data for {symbols}")
+        new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
+        print()
+    except Exception as e:
+        raise TickerException(f"Fetching price data for {symbols} failed", symbols) from e
+
+    # If only one ticker is requested, yfinance returns pd.Series instead of pd.DataFrame
     if len(symbols) == 1:
         new_data = pd.DataFrame(new_data)
         new_data.columns = symbols
+
+    for ticker in new_data:
+        if new_data[ticker].empty or new_data[ticker].isna().any():
+            raise TickerException(f"Price data for ticker ${ticker.upper()} is missing.", ticker)
+
     sql.insert_price_data(con, new_data)
     return pd.concat(map(lambda t: sql.get_price_data(con, t), symbols), axis=1)

@@ -11,13 +11,6 @@ from .sql import get_connection
 from .factors import m12_return_rate
 from .price_fetching import fetch_prices
 
-class TickerException(Exception):
-    """ Has class variable self.ticker so you know which ticker doesn't work """
-    def __init__(self, message, ticker):
-        super().__init__(message)
-        self.message = message
-        self.ticker = ticker
-
 
 class Model(EfficientFrontier):
     """ Carhart 4-factor model + Efficient Frontier
@@ -30,10 +23,6 @@ class Model(EfficientFrontier):
     def __init__(self, model, tickers):
         with closing(get_connection()) as con:
             prices = fetch_prices(con, tickers)
-
-        for ticker in prices:
-            if prices[ticker].empty:
-                raise TickerException(f"Ticker ${ticker.upper()} has no price data.", ticker)
 
         rates = {t: m12_return_rate(prices[t]) for t in prices}
         self.curr_prices = prices.tail(1)
