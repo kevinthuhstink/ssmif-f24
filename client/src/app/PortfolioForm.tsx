@@ -100,7 +100,7 @@ export default function PortfolioForm() {
                 <Input {...form.register("tickers")} />
               </FormControl>
               <FormDescription>
-                The tickers to optimize portfolio on.
+                Comma separated list of tickers to optimize portfolio on.
               </FormDescription>
               <FormMessage />
             </FormItem>

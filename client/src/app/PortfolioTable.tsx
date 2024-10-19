@@ -26,18 +26,20 @@ export default function PortfolioTable() {
             Sharpe Ratio: {portfolio.sharpe}<br/>
           </h1>
           <Table>
-            <TableCaption>Ticker to weight</TableCaption>
+            <TableCaption>Optimized for Max Sharpe ratio</TableCaption>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Ticker</TableHead>
                 <TableHead className="text-right">Weight</TableHead>
+                <TableHead className="text-right"># of Stocks</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              { Object.entries(portfolio.weights).map(([k, v], i) => (
+              { Object.keys(portfolio.weights).map((k, i) => (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{k}</TableCell>
-                  <TableCell className="text-right">{v}</TableCell>
+                  <TableCell className="text-right">{portfolio.weights[k]}</TableCell>
+                  <TableCell className="text-right">{portfolio.shares[k]}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

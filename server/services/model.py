@@ -36,6 +36,7 @@ class Model(EfficientFrontier):
                 raise TickerException(f"Ticker ${ticker.upper()} has no price data.", ticker)
 
         rates = {t: m12_return_rate(prices[t]) for t in prices}
+        self.curr_prices = prices.tail(1)
         self.returns = pd.Series({t: model(r) for t, r in rates.items()})
         self.returns.name = "Expected Returns"
         self.risk_free_rate = model.risk_free_rates.iloc[-1]
@@ -82,3 +83,17 @@ class Model(EfficientFrontier):
         """
         excess_returns = self.portfolio_returns(weights) - self.risk_free_rate
         return excess_returns / self.portfolio_risk(weights)
+
+    def share_count(self, total, weights):
+        """ Determines integer number of shares that should be bought from
+        portfolio weights and total portfolio value
+
+        :param total: Total portfolio value
+        :type total: float
+        :param weights: The weight of each asset in the portfolio
+        :type weights: OrderedDict[str, float]
+
+        :return: Each asset mapped to how many shares should be bought
+        :rtype: Dict[str, int]
+        """
+        return {k: int((v * total) / self.curr_prices[k]) for k, v in weights.items()}

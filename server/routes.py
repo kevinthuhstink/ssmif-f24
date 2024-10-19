@@ -46,10 +46,12 @@ def get_weights():
     returns = (model.portfolio_returns(portfolio) - 1) * value
     volatility = model.portfolio_risk(portfolio)
     sharp = model.sharpe_ratio(portfolio)
+    shares = model.share_count(value, portfolio)
 
     return jsonify({
         "status": "OK",
         "weights": portfolio,
+        "shares": shares,
         "return": returns,
         "volatility": volatility,
         "sharpe": sharp

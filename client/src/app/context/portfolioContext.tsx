@@ -11,7 +11,8 @@ export const portfolioSchema = z.object({
   return: z.number(),
   volatility: z.number(),
   sharpe: z.number(),
-  weights: z.record(z.string(), z.number())
+  weights: z.record(z.string(), z.number()),
+  shares: z.record(z.string(), z.number())
 })
 
 export type Portfolio = z.infer<typeof portfolioSchema>
