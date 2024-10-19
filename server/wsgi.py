@@ -12,6 +12,7 @@ def init_app():
     CORS(app)
     return app
 
+server = init_app()
+
 if __name__ == "__main__":
-    server = init_app()
     server.run(host="0.0.0.0", port=PORT)
