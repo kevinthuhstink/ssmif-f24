@@ -23,7 +23,7 @@ export default function Authenticator() {
       return
 
     try {
-      const data = jwtSchema.parse({ jwt: res.data })
+      const data = jwtSchema.parse(res.data)
       setAuth(data)
     } catch (err) {
       console.error(err)
@@ -34,7 +34,7 @@ export default function Authenticator() {
   return (
     <div className="mb-24">
       <h1 className="text-4xl">
-        { auth.jwt ? "THANK YOU FOR AUTHETICATING :)" : "YOU NEED TO BE AUTHENTICATED TO USE THIS APP" }
+        { auth.jwt ? "THANK YOU FOR AUTHENTICATING :)" : "YOU NEED TO BE AUTHENTICATED TO USE THIS APP" }
       </h1>
       { auth.error && <p className="text-red-500">{auth.error}</p> }
       <p>

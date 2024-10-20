@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { serverRequest, errorSchema, unknownError } from "./baseRequest"
 import { portfolioSchema, usePortfolio } from "./context/portfolioContext"
+import { useAuth } from "./context/authContext"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -28,6 +29,7 @@ type FormInput = z.infer<typeof formSchema>
 
 export default function PortfolioForm() {
   const { portfolioDispatch } = usePortfolio()
+  const { auth, setAuth } = useAuth()
   const form = useForm<FormInput>({
     resolver: zodResolver(formSchema)
   })
@@ -38,17 +40,22 @@ export default function PortfolioForm() {
     const res = await serverRequest.put("/model", {
       value: input.value,
       tickers: tickerArray,
+    }, {
+      headers: { Authorization: auth.jwt }
     }).catch((err: AxiosError) => {
       console.error(err)
       try {
         const errorData = errorSchema.parse(err.response?.data)
-        portfolioDispatch({ type: "ERROR", payload: errorData })
+        if (err.status == 401)
+          setAuth({ error: "Bad credentials. Please reauthenticate below." })
+        else
+          portfolioDispatch({ type: "ERROR", payload: errorData })
       } catch {
         portfolioDispatch({ type: "ERROR", payload: unknownError })
       }
     })
 
-    if (!res)
+    if (!res) // end function early if catch block is invoked
       return
 
     try {
@@ -102,7 +109,10 @@ export default function PortfolioForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button
+          type="submit"
+          disabled={!auth.jwt}
+        >Submit</Button>
       </form>
     </Form>
   )

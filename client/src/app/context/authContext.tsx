@@ -11,7 +11,9 @@ export const AuthContext = createContext<{
   auth: JWT,
   setAuth: React.Dispatch<React.SetStateAction<JWT>>
 }>(null!)
+
 export const useAuth = () => useContext(AuthContext)
+export const useJWT = () => useContext(AuthContext).auth.jwt
 
 
 export function AuthProvider({ children }: React.PropsWithChildren) {

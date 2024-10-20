@@ -4,10 +4,11 @@ All route responses should have a "status" field.
 
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from util import require_json_params
+from util import require_json_params, require_authentication
 from services.returns import Carhart4FactorModel
 from services.model import Model
 from services.errors import TickerException
+from services.auth import create_jwt
 
 core_blueprint = Blueprint("core", __name__, url_prefix="/")
 CORS(core_blueprint)
@@ -21,6 +22,7 @@ def healthcheck():
 
 
 @core_blueprint.put("model")
+@require_authentication
 @require_json_params(["value", "tickers"])
 def get_weights():
     """ Returns the desired weight of each stock.
@@ -56,4 +58,13 @@ def get_weights():
         "return": returns,
         "volatility": volatility,
         "sharpe": sharp
+        })
+
+
+@core_blueprint.route("jwt")
+def free_jwts():
+    """ Gives users free JWTs for authentication """
+    return jsonify({
+        "status": "OK",
+        "jwt": create_jwt()
         })
