@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { serverRequest } from "./baseRequest"
+import { AuthProvider } from "./context/authContext"
 import { PortfolioProvider } from "./context/portfolioContext"
 import PortfolioForm from "./PortfolioForm"
 import PortfolioTable from "./PortfolioTable"
@@ -23,11 +24,13 @@ export default function Page() {
   return (
     <main>
       {error && <h1 className="text-red-500">{error}</h1>}
-      <Authenticator />
-      <PortfolioProvider>
-        <PortfolioForm />
-        <PortfolioTable />
-      </PortfolioProvider>
+      <AuthProvider>
+        <PortfolioProvider>
+          <Authenticator />
+          <PortfolioForm />
+          <PortfolioTable />
+        </PortfolioProvider>
+      </AuthProvider>
     </main>
   );
 }

@@ -2,13 +2,8 @@ import { AxiosError } from "axios"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { serverRequest } from "./baseRequest"
-import {
-  portfolioSchema,
-  portfolioErrorSchema,
-  usePortfolio,
-  unknownErrorAction,
-} from "./context/portfolioContext"
+import { serverRequest, errorSchema, unknownError } from "./baseRequest"
+import { portfolioSchema, usePortfolio } from "./context/portfolioContext"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -39,17 +34,17 @@ export default function PortfolioForm() {
 
   async function onSubmit(input: FormInput) {
     const tickerArray = input.tickers.split(", ")
-    console.log(tickerArray)
+    // console.log(tickerArray)
     const res = await serverRequest.put("/model", {
       value: input.value,
       tickers: tickerArray,
     }).catch((err: AxiosError) => {
       console.error(err)
       try {
-        const errorData = portfolioErrorSchema.parse(err.response?.data)
+        const errorData = errorSchema.parse(err.response?.data)
         portfolioDispatch({ type: "ERROR", payload: errorData })
       } catch {
-        portfolioDispatch(unknownErrorAction)
+        portfolioDispatch({ type: "ERROR", payload: unknownError })
       }
     })
 
