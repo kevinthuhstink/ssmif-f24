@@ -1,6 +1,9 @@
 FROM python:3.12.6-slim AS base
 SHELL ["/bin/bash", "-c"]
 
+# Set JWT_SECRET to something thats super secure
+ENV JWT_SECRET SUPERSECUREJWTSECRETDONOTEXPOSE
+
 # Use /usr/src/app as the working directory of the container
 WORKDIR /usr/src/app
 COPY . /usr/src/app
