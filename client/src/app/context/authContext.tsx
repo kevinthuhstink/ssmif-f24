@@ -13,7 +13,6 @@ export const AuthContext = createContext<{
 }>(null!)
 
 export const useAuth = () => useContext(AuthContext)
-export const useJWT = () => useContext(AuthContext).auth.jwt
 
 
 export function AuthProvider({ children }: React.PropsWithChildren) {

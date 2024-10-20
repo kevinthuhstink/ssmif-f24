@@ -46,8 +46,8 @@ export default function PortfolioForm() {
       console.error(err)
       try {
         const errorData = errorSchema.parse(err.response?.data)
-        if (err.status == 401)
-          setAuth({ error: "Bad credentials. Please reauthenticate below." })
+        if (err.status == 444)
+          setAuth(errorData)
         else
           portfolioDispatch({ type: "ERROR", payload: errorData })
       } catch {

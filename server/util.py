@@ -2,6 +2,7 @@
 
 from functools import wraps
 from flask import request, jsonify
+from jwt import InvalidTokenError, ExpiredSignatureError
 from services.auth import decode_jwt
 
 def require_json_params(params):
@@ -27,7 +28,7 @@ def require_json_params(params):
 
 def require_authentication(func):
     """ Checks if the request has a valid JWT token in the Authentication header
-    Returns a 401 response if token verification fails
+    Returns a 444 response if token verification fails
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -35,10 +36,14 @@ def require_authentication(func):
             auth = request.headers["Authorization"]
             decode_jwt(auth)
             return func(*args, **kwargs)
-        except Exception as e:
-            print(e)
+        except ExpiredSignatureError:
+            return jsonify({
+                "status": "failure",
+                "error": "Invalid auth credentials: Token expired, please reauthenticate"
+            }), 444
+        except InvalidTokenError:
             return jsonify({
                 "status": "failure",
                 "error": "Invalid auth credentials: JWT verification failed"
-            }), 401
+            }), 444
     return wrapper

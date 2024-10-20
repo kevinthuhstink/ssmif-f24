@@ -85,4 +85,4 @@ class Model(EfficientFrontier):
         :return: Each asset mapped to how many shares should be bought
         :rtype: Dict[str, int]
         """
-        return {k: int((v * total) / self.curr_prices[k]) for k, v in weights.items()}
+        return {k: int(((v * total) / self.curr_prices[k]).iloc[0]) for k, v in weights.items()}

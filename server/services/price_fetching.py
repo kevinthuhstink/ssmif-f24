@@ -27,9 +27,8 @@ def fetch_prices(con, symbols):
         start_date = min(recent_entries)
 
     try:
-        print(f"Downloading price data for {symbols}")
+        print(f"\nDownloading price data for {symbols}")
         new_data = yf.download(symbols, start=start_date)["Close"].tz_localize(None)
-        print()
     except Exception as e:
         raise TickerException(f"Fetching price data for {symbols} failed", symbols) from e
 
@@ -38,6 +37,7 @@ def fetch_prices(con, symbols):
         new_data = pd.DataFrame(new_data)
         new_data.columns = symbols
 
+    print(new_data)
     for ticker in new_data:
         if new_data[ticker].empty or new_data[ticker].isna().any():
             raise TickerException(f"Price data for ticker ${ticker.upper()} is missing.", ticker)

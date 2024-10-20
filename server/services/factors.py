@@ -20,7 +20,7 @@ class FactorModel():
                         "big_value": ["NKE", "PFE", "UPS", "USB"],
                         "big_growth": ["AMZN", "CRM"],
                         "winners": ["NVDA", "COHR", "APP", "MSTR"],
-                        "losers": ["NFE", "NYCB", "MBLY"]
+                        "losers": ["NFE", "NYCB"]
                         }
             prices = {k: fetch_prices(con, v).dropna(axis=1) for k, v in self.tickers.items()}
 
