@@ -25,6 +25,8 @@ export default function Authenticator() {
     try {
       const data = jwtSchema.parse(res.data)
       setAuth(data)
+      if (data.jwt)
+        localStorage.setItem("ssmif-submission-jwt", data.jwt)
     } catch (err) {
       console.error(err)
       setAuth({ error: "JWT response type is invalid. Did the model fail?" })

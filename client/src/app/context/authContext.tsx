@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import { errorSchema } from "../baseRequest"
 import { z } from "zod"
 
@@ -17,6 +17,13 @@ export const useAuth = () => useContext(AuthContext)
 
 export function AuthProvider({ children }: React.PropsWithChildren) {
   const [auth, setAuth] = useState<JWT>({})
+
+  useEffect(() => {
+    const jwt = localStorage.getItem("ssmif-submission-jwt")
+    if (!jwt)
+      return
+    setAuth({ jwt })
+  }, [])
 
   return (
     <AuthContext.Provider value={{ auth, setAuth }}>
