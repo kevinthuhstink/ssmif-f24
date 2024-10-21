@@ -52,6 +52,8 @@ def get_weights():
 
     return jsonify({
         "status": "OK",
+        "tickers": tickers,
+        "value": value,
         "weights": portfolio,
         "shares": model.share_count(value, portfolio),
         "return": (model.portfolio_returns(portfolio) - 1) * value,

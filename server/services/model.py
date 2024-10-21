@@ -102,12 +102,12 @@ class Model(EfficientFrontier):
         :rtype: pandas.Series, indexed by pandas.Timestamp
         """
         trade_days_in_year = 253
-        this_year = self.prices.tail(trade_days_in_year)
-
+        year_performance = self.prices.tail(trade_days_in_year).pct_change()
         weights_array = np.array([weights[t] for t in self.prices.columns])
-        portfolio_value = this_year.apply(lambda x: x.dot(weights_array), axis=1)
+        year_performance.iloc[0] = weights_array
 
-        initial_value = portfolio_value.head(1)
-        init_val_adjusted = portfolio_value.apply(lambda x: x / initial_value).iloc[:, 0]
-        init_val_adjusted.name = "Performance"
-        return init_val_adjusted
+        # require percent changes
+        for i in range(1, len(year_performance.index)):
+            year_performance.iloc[i] = (1 + year_performance.iloc[i]) * year_performance.iloc[i - 1]
+        portfolio_perf = year_performance.apply(sum, axis=1)
+        return portfolio_perf
