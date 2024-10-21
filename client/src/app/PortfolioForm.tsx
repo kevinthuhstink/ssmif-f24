@@ -35,8 +35,7 @@ export default function PortfolioForm() {
   })
 
   async function onSubmit(input: FormInput) {
-    const tickerArray = input.tickers.split(", ")
-    // console.log(tickerArray)
+    const tickerArray = input.tickers.split(/\s*,\s*/)
     const res = await serverRequest.put("/model", {
       value: input.value,
       tickers: tickerArray,
@@ -103,7 +102,8 @@ export default function PortfolioForm() {
                 <Input {...form.register("tickers")} />
               </FormControl>
               <FormDescription>
-                Comma separated list of tickers to optimize portfolio on.
+                Comma separated list of tickers to optimize portfolio on.<br/>
+                Please do not add any trailing commas or extra spaces between tickers.
               </FormDescription>
               <FormMessage />
             </FormItem>

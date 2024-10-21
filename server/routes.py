@@ -34,7 +34,13 @@ def get_weights():
     """
     body = request.get_json()
     value = body["value"]
-    tickers = list(map(lambda t: t.upper(), body["tickers"]))
+    tickers = list(filter(bool, map(lambda t: t.upper(), body["tickers"])))
+
+    if len(tickers) > len(set(tickers)):
+        return jsonify({
+            "status": "ERROR",
+            "error": "Duplicate tickers may not exist."
+            }), 400
 
     try:
         model = Model(returns_model, tickers)
