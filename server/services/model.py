@@ -22,14 +22,14 @@ class Model(EfficientFrontier):
     """
     def __init__(self, model, tickers):
         with closing(get_connection()) as con:
-            prices = fetch_prices(con, tickers)
+            self.prices = fetch_prices(con, tickers)
 
-        rates = {t: m12_return_rate(prices[t]) for t in prices}
-        self.curr_prices = prices.tail(1)
+        rates = {t: m12_return_rate(self.prices[t]) for t in self.prices}
+        self.curr_prices = self.prices.tail(1)
         self.returns = pd.Series({t: model(r) for t, r in rates.items()})
         self.returns.name = "Expected Returns"
         self.risk_free_rate = model.risk_free_rates.iloc[-1]
-        self.risk_matrix = fix_nonpositive_semidefinite(risk_matrix(prices))
+        self.risk_matrix = fix_nonpositive_semidefinite(risk_matrix(self.prices))
         super().__init__(self.returns, self.risk_matrix)
 
     def __str__(self):
@@ -52,13 +52,16 @@ class Model(EfficientFrontier):
         """ Determines total portfolio volatility given portfolio weights
 
         :param weights: The weight of each asset in the portfolio
+                        ORDER MATTERS! DO NOT CHANGE THE ORDER OF THE
+                        ENTRIES FROM WHAT WAS ORIGINALLY CALCULATED AFTER
+                        RUNNING THE PORTFOLIO OPTIMIZER
         :type weights: OrderedDict[str, float]
 
         :return: Annualized portfolio risk
                  (one stddev of total value variation as fraction of total weight)
         :rtype: float
         """
-        w = np.array(list(weights.values()))
+        w = np.array([weights[t] for t in self.prices.columns])
         return sqrt((w[None, :] @ self.risk_matrix.to_numpy() @ w)[0])
 
     def sharpe_ratio(self, weights):
@@ -86,3 +89,25 @@ class Model(EfficientFrontier):
         :rtype: Dict[str, int]
         """
         return {k: int(((v * total) / self.curr_prices[k]).iloc[0]) for k, v in weights.items()}
+
+    def historical_performance(self, weights):
+        """ Calculates portfolio performance over the past year
+        for the given portfolio weights
+
+        :param weights: The weight of each asset in the portfolio
+        :type weights: OrderedDict[str, float]
+
+        :return: The value of the portfolio at every time step
+                 The starting portfolio has a value of 1
+        :rtype: pandas.Series, indexed by pandas.Timestamp
+        """
+        trade_days_in_year = 253
+        this_year = self.prices.tail(trade_days_in_year)
+
+        weights_array = np.array([weights[t] for t in self.prices.columns])
+        portfolio_value = this_year.apply(lambda x: x.dot(weights_array), axis=1)
+
+        initial_value = portfolio_value.head(1)
+        init_val_adjusted = portfolio_value.apply(lambda x: x / initial_value).iloc[:, 0]
+        init_val_adjusted.name = "Performance"
+        return init_val_adjusted

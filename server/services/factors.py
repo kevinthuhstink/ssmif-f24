@@ -116,8 +116,8 @@ def m12_return_rate(prices):
     :rtype: pandas.Series, indexed by pandas.Timestamp
     """
     num_days = TRADEDAYS_IN_YEAR
-    last_year = prices.loc[:prices.index[num_days]]
-    this_year = prices.loc[prices.index[-1 * num_days - 1]:]
+    last_year = prices.head(num_days + 1)
+    this_year = prices.tail(num_days + 1)
 
     date_indices = this_year.index
     last_year.index = list(range(num_days + 1))

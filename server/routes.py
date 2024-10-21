@@ -46,18 +46,18 @@ def get_weights():
 
     print(model) # NO LOGGER 💀
     portfolio = model.max_sharpe(risk_free_rate=model.risk_free_rate)
-    returns = (model.portfolio_returns(portfolio) - 1) * value
-    volatility = model.portfolio_risk(portfolio)
-    sharp = model.sharpe_ratio(portfolio)
-    shares = model.share_count(value, portfolio)
+
+    perf = model.historical_performance(portfolio)
+    perf = {int(ts.timestamp()): perf[ts] for ts in perf.index}
 
     return jsonify({
         "status": "OK",
         "weights": portfolio,
-        "shares": shares,
-        "return": returns,
-        "volatility": volatility,
-        "sharpe": sharp
+        "shares": model.share_count(value, portfolio),
+        "return": (model.portfolio_returns(portfolio) - 1) * value,
+        "volatility": model.portfolio_risk(portfolio),
+        "sharpe": model.sharpe_ratio(portfolio),
+        "performance": perf
         })
 
 
