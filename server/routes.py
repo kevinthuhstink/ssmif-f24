@@ -48,7 +48,7 @@ def get_weights():
     portfolio = model.max_sharpe(risk_free_rate=model.risk_free_rate)
 
     perf = model.historical_performance(portfolio)
-    perf = {int(ts.timestamp()): perf[ts] for ts in perf.index}
+    perf = {f"{ts.isoformat(timespec="seconds")}Z": perf[ts] for ts in perf.index}
 
     return jsonify({
         "status": "OK",

@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { usePortfolio } from "./context/portfolioContext"
+import Graph from "./Graph"
 
 export default function PortfolioTable() {
   const { portfolio } = usePortfolio()
@@ -44,6 +45,7 @@ export default function PortfolioTable() {
               ))}
             </TableBody>
           </Table>
+          <Graph />
         </>
       }
     </div>
