@@ -4,6 +4,8 @@ import { z } from "zod"
 
 export const portfolioSchema = z.object({
   status: z.string(),
+  tickers: z.string().array(),
+  value: z.number(),
   error: errorSchema.shape.error.optional(),
   return: z.number(),
   volatility: z.number(),
